@@ -1,10 +1,3 @@
---[[
-    💠 FLUXIOM LIBRARY V1 (APEX EDITION / REDZ DESIGN) 💠
-    * FRAMEWORK STANDALONE (MODO BRUTO)
-    * SEM FUNÇÕES EXTRAS (PURA INTERFACE GRÁFICA)
-    * TOUCH COMPATÍVEL & MOBILE FAB FLUTUANTE
-]]
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -13,7 +6,6 @@ local CoreGui = game:GetService("CoreGui")
 
 local Root = (gethui and gethui()) or CoreGui
 
--- THEME CONSTANTS
 local Theme = {
     Main = Color3.fromRGB(10, 11, 16),
     TopBar = Color3.fromRGB(15, 17, 26),
@@ -29,25 +21,24 @@ local Theme = {
 }
 
 local function CreateCorner(p, r) Instance.new("UICorner", p).CornerRadius = UDim.new(0, r or 6) end
+
 local function CreateStroke(p, c, th)
     local s = Instance.new("UIStroke", p)
     s.Color = c or Theme.Stroke; s.Thickness = th or 1.2; s.ApplyStrokeMode = "Border"; s.Transparency = 0.4
     return s
 end
+
 local function MakeDrag(frame)
     local drag, dS, sP; frame.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = true; dS = i.Position; sP = frame.Position end end)
     UserInputService.InputChanged:Connect(function(i) if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local d = i.Position - dS; frame.Position = UDim2.new(sP.X.Scale, sP.X.Offset + d.X, sP.Y.Scale, sP.Y.Offset + d.Y) end end)
     frame.InputEnded:Connect(function() drag = false end)
 end
 
---=========================================
--- MAIN LIBRARY OBJECT
---=========================================
 local Fluxiom = {}
 
 function Fluxiom:MakeWindow(Config)
-    local HubName = Config.Name or "FLUXIOM"
-    local HubVersion = Config.Version or "1.0"
+    local HubName = Config.Name or "LIBRARY"
+    local HubVersion = Config.Version or "V1"
     
     if Root:FindFirstChild(HubName .. "GUI") then Root[HubName .. "GUI"]:Destroy() end
 
@@ -56,7 +47,6 @@ function Fluxiom:MakeWindow(Config)
     Screen.ResetOnSpawn = false
     Screen.IgnoreGuiInset = true
 
-    -- Notification Base
     local NotifContainer = Instance.new("Frame", Screen)
     NotifContainer.Size = UDim2.new(0, 280, 1, 0)
     NotifContainer.Position = UDim2.new(1, -290, 0, 0)
@@ -66,7 +56,6 @@ function Fluxiom:MakeWindow(Config)
 
     local Window = { Tabs = {} }
     
-    -- Main Notifications Handler
     function Window:Notification(title, desc, duration)
         local n = Instance.new("Frame", NotifContainer)
         n.Size = UDim2.new(1, 0, 0, 0); n.BackgroundColor3 = Theme.Main
@@ -89,7 +78,6 @@ function Fluxiom:MakeWindow(Config)
         end)
     end
 
-    -- Canvas Elements
     local Main = Instance.new("CanvasGroup", Screen)
     Main.Size = UDim2.new(0, 540, 0, 360)
     Main.Position = UDim2.new(0.5, -270, 0.5, -180)
@@ -98,7 +86,6 @@ function Fluxiom:MakeWindow(Config)
     local MBorder = CreateStroke(Main, Theme.Accent1, 1.8)
     MakeDrag(Main)
 
-    -- Topbar Component
     local TopBar = Instance.new("Frame", Main)
     TopBar.Size = UDim2.new(1, 0, 0, 36); TopBar.BackgroundColor3 = Theme.TopBar
     CreateCorner(TopBar, 10)
@@ -117,14 +104,13 @@ function Fluxiom:MakeWindow(Config)
     local Container = Instance.new("Frame", Main)
     Container.Size = UDim2.new(1, -155, 1, -44); Container.Position = UDim2.new(0, 150, 0, 40); Container.BackgroundTransparency = 1
 
-    -- Anim & Float Button Setup
     RunService.RenderStepped:Connect(function()
         MBorder.Color = Theme.Accent1:lerp(Theme.Accent2, (math.sin(tick() * 2) + 1) / 2)
     end)
     
     local FAB = Instance.new("ImageButton", Screen)
     FAB.Size = UDim2.new(0, 45, 0, 45); FAB.Position = UDim2.new(0, 15, 0.45, 0)
-    FAB.BackgroundColor3 = Theme.Main; FAB.Image = "rbxassetid://13476722240" -- Altere aqui pra Logo do menu se quiser
+    FAB.BackgroundColor3 = Theme.Main; FAB.Image = "rbxassetid://13476722240"
     CreateCorner(FAB, 100); local FabStr = CreateStroke(FAB, Theme.Accent1, 1.5)
     MakeDrag(FAB)
 
@@ -147,11 +133,9 @@ function Fluxiom:MakeWindow(Config)
     CloseBtn.BackgroundTransparency = 1; CloseBtn.Text = "−"; CloseBtn.TextColor3 = Theme.Text; CloseBtn.TextSize = 16
     CloseBtn.MouseButton1Click:Connect(function() ToggleMenu(false) end)
 
-    -- Window Load Anim
     Main.GroupTransparency = 1
     TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Back), {GroupTransparency = 0}):Play()
 
-    -- TAB FUNCTION
     function Window:CreateTab(Name)
         local TBtn = Instance.new("TextButton", TabHold)
         TBtn.Size = UDim2.new(1, 0, 0, 30); TBtn.BackgroundColor3 = Theme.Accent1; TBtn.BackgroundTransparency = 1
@@ -174,7 +158,6 @@ function Fluxiom:MakeWindow(Config)
         table.insert(Window.Tabs, {Button = TBtn, Page = Page})
         if #Window.Tabs == 1 then Page.Visible = true; TBtn.BackgroundTransparency = 0.9; TBtn.TextColor3 = Theme.Accent1 end
 
-        -- PAGE BUILDERS (ELEMENTOS DO MENU)
         local Tab = {}
 
         function Tab:Topic(text)
@@ -203,7 +186,7 @@ function Fluxiom:MakeWindow(Config)
                 callback(state)
             end
             Tgl.MouseButton1Click:Connect(function() state = not state; Run() end)
-            if state then Run() end -- Auto initialize visual
+            if state then Run() end 
         end
 
         function Tab:Slider(text, min, max, default, callback)
@@ -252,7 +235,7 @@ function Fluxiom:MakeWindow(Config)
             for _,v in pairs(list) do
                 local oBtn = Instance.new("TextButton", cList)
                 oBtn.Size = UDim2.new(1, 0, 0, 24); oBtn.BackgroundColor3 = Theme.TopBar; oBtn.Text = "  " .. v; oBtn.TextColor3 = Theme.TextDim; oBtn.Font = Theme.FontLight; oBtn.TextSize = 10; oBtn.TextXAlignment = "Left"; CreateCorner(oBtn, 4)
-                oBtn.MouseButton1Click:Connect(function() lbl.Text = text.." : "..v; state = false; cb(v); TweenService:Create(D, TweenInfo.new(0.2), {Size = UDim2.new(1, -8, 0, 34)}):Play() end)
+                oBtn.MouseButton1Click:Connect(function() lbl.Text = text.." : "..v; state = false; callback(v); TweenService:Create(D, TweenInfo.new(0.2), {Size = UDim2.new(1, -8, 0, 34)}):Play() end)
             end
         end
 
@@ -274,48 +257,4 @@ function Fluxiom:MakeWindow(Config)
     return Window
 end
 
-
--- ==============================================================
--- >>> EXEMPLO PRÁTICO DE COMO VOCÊ VAI USAR A SUA LIBRARY  <<<
--- ==============================================================
-
-local Window = Fluxiom:MakeWindow({
-    Name = "APEX CHEAT",
-    Version = "v2.5"
-})
-
-local PlayerTab = Window:CreateTab("Player Mod")
-
-PlayerTab:Topic("Character Modules")
-
-PlayerTab:Toggle("Enable Super Speed", false, function(value)
-    print("Toggle disparado! Estado:", value)
-end)
-
-PlayerTab:Slider("Speed Value", 16, 500, 30, function(num)
-    print("O Speed alterou para: " .. num)
-end)
-
-PlayerTab:Topic("Arsenal Options")
-
-PlayerTab:Dropdown("Escolher Modificação", {"Hitbox Expander", "Kill Aura", "Infinite Jump"}, function(option)
-    print("Usuário Selecionou no drop: " .. option)
-end)
-
-PlayerTab:Button("Limpar Todas Alterações", function()
-    Window:Notification("Alerta de Script", "Você clicou no botão! Sua física foi limpa com sucesso.", 4)
-end)
-
-
-local ESPTab = Window:CreateTab("ESP Visual")
-
-ESPTab:Topic("Renderer Features")
-
-ESPTab:Toggle("Player Boxes 3D", true, function(state)
-end)
-
-ESPTab:Toggle("Names Tags Distance", false, function(state)
-end)
-
-ESPTab:Slider("Maximum Tracers Dist.", 50, 1000, 400, function(value)
-end)
+return Fluxiom
