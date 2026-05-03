@@ -1,0 +1,321 @@
+--[[
+    💠 FLUXIOM LIBRARY V1 (APEX EDITION / REDZ DESIGN) 💠
+    * FRAMEWORK STANDALONE (MODO BRUTO)
+    * SEM FUNÇÕES EXTRAS (PURA INTERFACE GRÁFICA)
+    * TOUCH COMPATÍVEL & MOBILE FAB FLUTUANTE
+]]
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local Root = (gethui and gethui()) or CoreGui
+
+-- THEME CONSTANTS
+local Theme = {
+    Main = Color3.fromRGB(10, 11, 16),
+    TopBar = Color3.fromRGB(15, 17, 26),
+    Sidebar = Color3.fromRGB(8, 9, 13),
+    Section = Color3.fromRGB(18, 20, 28),
+    Accent1 = Color3.fromRGB(0, 255, 240),
+    Accent2 = Color3.fromRGB(170, 50, 255),
+    Stroke = Color3.fromRGB(45, 48, 60),
+    Text = Color3.fromRGB(255, 255, 255),
+    TextDim = Color3.fromRGB(160, 160, 175),
+    Font = Enum.Font.GothamBold,
+    FontLight = Enum.Font.GothamMedium
+}
+
+local function CreateCorner(p, r) Instance.new("UICorner", p).CornerRadius = UDim.new(0, r or 6) end
+local function CreateStroke(p, c, th)
+    local s = Instance.new("UIStroke", p)
+    s.Color = c or Theme.Stroke; s.Thickness = th or 1.2; s.ApplyStrokeMode = "Border"; s.Transparency = 0.4
+    return s
+end
+local function MakeDrag(frame)
+    local drag, dS, sP; frame.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = true; dS = i.Position; sP = frame.Position end end)
+    UserInputService.InputChanged:Connect(function(i) if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local d = i.Position - dS; frame.Position = UDim2.new(sP.X.Scale, sP.X.Offset + d.X, sP.Y.Scale, sP.Y.Offset + d.Y) end end)
+    frame.InputEnded:Connect(function() drag = false end)
+end
+
+--=========================================
+-- MAIN LIBRARY OBJECT
+--=========================================
+local Fluxiom = {}
+
+function Fluxiom:MakeWindow(Config)
+    local HubName = Config.Name or "FLUXIOM"
+    local HubVersion = Config.Version or "1.0"
+    
+    if Root:FindFirstChild(HubName .. "GUI") then Root[HubName .. "GUI"]:Destroy() end
+
+    local Screen = Instance.new("ScreenGui", Root)
+    Screen.Name = HubName .. "GUI"
+    Screen.ResetOnSpawn = false
+    Screen.IgnoreGuiInset = true
+
+    -- Notification Base
+    local NotifContainer = Instance.new("Frame", Screen)
+    NotifContainer.Size = UDim2.new(0, 280, 1, 0)
+    NotifContainer.Position = UDim2.new(1, -290, 0, 0)
+    NotifContainer.BackgroundTransparency = 1
+    local NList = Instance.new("UIListLayout", NotifContainer)
+    NList.VerticalAlignment = "Bottom"; NList.Padding = UDim.new(0, 8)
+
+    local Window = { Tabs = {} }
+    
+    -- Main Notifications Handler
+    function Window:Notification(title, desc, duration)
+        local n = Instance.new("Frame", NotifContainer)
+        n.Size = UDim2.new(1, 0, 0, 0); n.BackgroundColor3 = Theme.Main
+        n.ClipsDescendants = true
+        CreateCorner(n); CreateStroke(n, Theme.Accent1)
+        
+        local t = Instance.new("TextLabel", n)
+        t.Size = UDim2.new(1, -10, 0, 20); t.Position = UDim2.new(0, 10, 0, 5)
+        t.Text = title; t.TextColor3 = Theme.Accent1; t.Font = Theme.Font; t.TextSize = 12; t.TextXAlignment = "Left"; t.BackgroundTransparency = 1
+        
+        local d = Instance.new("TextLabel", n)
+        d.Size = UDim2.new(1, -10, 1, -25); d.Position = UDim2.new(0, 10, 0, 25)
+        d.Text = desc; d.TextColor3 = Theme.Text; d.Font = Theme.FontLight; d.TextSize = 11; d.TextXAlignment = "Left"; d.TextWrapped = true; d.BackgroundTransparency = 1
+        
+        TweenService:Create(n, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 65)}):Play()
+        task.delay(duration or 3, function()
+            TweenService:Create(n, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 0)}):Play()
+            task.wait(0.3)
+            n:Destroy()
+        end)
+    end
+
+    -- Canvas Elements
+    local Main = Instance.new("CanvasGroup", Screen)
+    Main.Size = UDim2.new(0, 540, 0, 360)
+    Main.Position = UDim2.new(0.5, -270, 0.5, -180)
+    Main.BackgroundColor3 = Theme.Main; Main.BorderSizePixel = 0
+    CreateCorner(Main, 10)
+    local MBorder = CreateStroke(Main, Theme.Accent1, 1.8)
+    MakeDrag(Main)
+
+    -- Topbar Component
+    local TopBar = Instance.new("Frame", Main)
+    TopBar.Size = UDim2.new(1, 0, 0, 36); TopBar.BackgroundColor3 = Theme.TopBar
+    CreateCorner(TopBar, 10)
+
+    local TitleLbl = Instance.new("TextLabel", TopBar)
+    TitleLbl.Size = UDim2.new(1, -100, 1, 0); TitleLbl.Position = UDim2.new(0, 15, 0, 0)
+    TitleLbl.Text = string.format("%s <font color='#00FFF0'>%s</font>", HubName:upper(), HubVersion); TitleLbl.RichText = true
+    TitleLbl.TextColor3 = Theme.Text; TitleLbl.Font = Theme.Font; TitleLbl.TextSize = 13; TitleLbl.TextXAlignment = "Left"; TitleLbl.BackgroundTransparency = 1
+
+    local Sidebar = Instance.new("Frame", Main)
+    Sidebar.Size = UDim2.new(0, 140, 1, -44); Sidebar.Position = UDim2.new(0, 6, 0, 40)
+    Sidebar.BackgroundColor3 = Theme.Sidebar; CreateCorner(Sidebar, 8)
+    local TabHold = Instance.new("ScrollingFrame", Sidebar); TabHold.Size = UDim2.new(1, -10, 1, -10); TabHold.Position = UDim2.new(0, 5, 0, 5); TabHold.BackgroundTransparency = 1; TabHold.ScrollBarThickness = 0
+    Instance.new("UIListLayout", TabHold).Padding = UDim.new(0, 4)
+
+    local Container = Instance.new("Frame", Main)
+    Container.Size = UDim2.new(1, -155, 1, -44); Container.Position = UDim2.new(0, 150, 0, 40); Container.BackgroundTransparency = 1
+
+    -- Anim & Float Button Setup
+    RunService.RenderStepped:Connect(function()
+        MBorder.Color = Theme.Accent1:lerp(Theme.Accent2, (math.sin(tick() * 2) + 1) / 2)
+    end)
+    
+    local FAB = Instance.new("ImageButton", Screen)
+    FAB.Size = UDim2.new(0, 45, 0, 45); FAB.Position = UDim2.new(0, 15, 0.45, 0)
+    FAB.BackgroundColor3 = Theme.Main; FAB.Image = "rbxassetid://13476722240" -- Altere aqui pra Logo do menu se quiser
+    CreateCorner(FAB, 100); local FabStr = CreateStroke(FAB, Theme.Accent1, 1.5)
+    MakeDrag(FAB)
+
+    local isMenuVisible = true
+    local function ToggleMenu(state)
+        isMenuVisible = state
+        if state then
+            Main.Visible = true; TweenService:Create(Main, TweenInfo.new(0.3), {GroupTransparency = 0}):Play()
+            FabStr.Color = Theme.Accent1
+        else
+            TweenService:Create(Main, TweenInfo.new(0.3), {GroupTransparency = 1}):Play()
+            task.delay(0.3, function() if not isMenuVisible then Main.Visible = false end end)
+            FabStr.Color = Theme.TextDim
+        end
+    end
+    FAB.MouseButton1Click:Connect(function() ToggleMenu(not isMenuVisible) end)
+
+    local CloseBtn = Instance.new("TextButton", TopBar)
+    CloseBtn.Size = UDim2.new(0, 36, 1, 0); CloseBtn.Position = UDim2.new(1, -40, 0, 0)
+    CloseBtn.BackgroundTransparency = 1; CloseBtn.Text = "−"; CloseBtn.TextColor3 = Theme.Text; CloseBtn.TextSize = 16
+    CloseBtn.MouseButton1Click:Connect(function() ToggleMenu(false) end)
+
+    -- Window Load Anim
+    Main.GroupTransparency = 1
+    TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Back), {GroupTransparency = 0}):Play()
+
+    -- TAB FUNCTION
+    function Window:CreateTab(Name)
+        local TBtn = Instance.new("TextButton", TabHold)
+        TBtn.Size = UDim2.new(1, 0, 0, 30); TBtn.BackgroundColor3 = Theme.Accent1; TBtn.BackgroundTransparency = 1
+        TBtn.Text = "  " .. Name; TBtn.Font = Theme.Font; TBtn.TextSize = 11; TBtn.TextColor3 = Theme.TextDim; TBtn.TextXAlignment = "Left"; CreateCorner(TBtn, 4)
+
+        local Page = Instance.new("ScrollingFrame", Container)
+        Page.Size = UDim2.new(1, 0, 1, 0); Page.BackgroundTransparency = 1; Page.Visible = false
+        Page.ScrollBarThickness = 2; Page.ScrollBarImageColor3 = Theme.Accent1; Page.CanvasSize = UDim2.new(0,0,0,0)
+        local PList = Instance.new("UIListLayout", Page); PList.Padding = UDim.new(0, 6)
+
+        PList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            Page.CanvasSize = UDim2.new(0, 0, 0, PList.AbsoluteContentSize.Y + 20)
+        end)
+
+        TBtn.MouseButton1Click:Connect(function()
+            for _, tb in pairs(Window.Tabs) do tb.Page.Visible = false; tb.Button.BackgroundTransparency = 1; tb.Button.TextColor3 = Theme.TextDim end
+            Page.Visible = true; TBtn.BackgroundTransparency = 0.9; TBtn.TextColor3 = Theme.Accent1
+        end)
+
+        table.insert(Window.Tabs, {Button = TBtn, Page = Page})
+        if #Window.Tabs == 1 then Page.Visible = true; TBtn.BackgroundTransparency = 0.9; TBtn.TextColor3 = Theme.Accent1 end
+
+        -- PAGE BUILDERS (ELEMENTOS DO MENU)
+        local Tab = {}
+
+        function Tab:Topic(text)
+            local Lbl = Instance.new("TextLabel", Page)
+            Lbl.Size = UDim2.new(1, -5, 0, 20); Lbl.BackgroundTransparency = 1
+            Lbl.Text = "» " .. text:upper(); Lbl.Font = Theme.Font; Lbl.TextSize = 10; Lbl.TextColor3 = Theme.Accent1; Lbl.TextXAlignment = "Left"
+        end
+
+        function Tab:Toggle(text, default, callback)
+            local Tgl = Instance.new("TextButton", Page)
+            Tgl.Size = UDim2.new(1, -8, 0, 34); Tgl.BackgroundColor3 = Theme.Section; Tgl.Text = ""
+            CreateCorner(Tgl); CreateStroke(Tgl)
+
+            local txtL = Instance.new("TextLabel", Tgl)
+            txtL.Size = UDim2.new(1, -50, 1, 0); txtL.Position = UDim2.new(0, 12, 0, 0); txtL.Text = text; txtL.TextColor3 = Theme.Text; txtL.Font = Theme.FontLight; txtL.TextSize = 11; txtL.TextXAlignment = "Left"; txtL.BackgroundTransparency = 1
+
+            local bx = Instance.new("Frame", Tgl)
+            bx.Size = UDim2.new(0, 32, 0, 16); bx.Position = UDim2.new(1, -42, 0.5, -8); bx.BackgroundColor3 = Theme.Main; CreateCorner(bx, 10)
+            local circ = Instance.new("Frame", bx)
+            circ.Size = UDim2.new(0, 12, 0, 12); circ.Position = UDim2.new(0, 2, 0.5, -6); circ.BackgroundColor3 = Theme.TextDim; CreateCorner(circ, 10)
+
+            local state = default or false
+            local function Run()
+                TweenService:Create(circ, TweenInfo.new(0.2), {Position = state and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6), BackgroundColor3 = state and Theme.Accent1 or Theme.TextDim}):Play()
+                TweenService:Create(bx, TweenInfo.new(0.2), {BackgroundColor3 = state and Color3.fromRGB(30, 45, 55) or Theme.Main}):Play()
+                callback(state)
+            end
+            Tgl.MouseButton1Click:Connect(function() state = not state; Run() end)
+            if state then Run() end -- Auto initialize visual
+        end
+
+        function Tab:Slider(text, min, max, default, callback)
+            local Sdr = Instance.new("Frame", Page)
+            Sdr.Size = UDim2.new(1, -8, 0, 42); Sdr.BackgroundColor3 = Theme.Section
+            CreateCorner(Sdr); CreateStroke(Sdr)
+
+            local tL = Instance.new("TextLabel", Sdr)
+            tL.Size = UDim2.new(1, -60, 0, 20); tL.Position = UDim2.new(0, 12, 0, 2); tL.Text = text; tL.TextColor3 = Theme.Text; tL.Font = Theme.FontLight; tL.TextSize = 10; tL.TextXAlignment = "Left"; tL.BackgroundTransparency = 1
+            local valL = Instance.new("TextLabel", Sdr)
+            valL.Size = UDim2.new(0, 40, 0, 20); valL.Position = UDim2.new(1, -52, 0, 2); valL.Text = tostring(default); valL.TextColor3 = Theme.Accent1; valL.Font = Theme.Font; valL.TextSize = 10; valL.TextXAlignment = "Right"; valL.BackgroundTransparency = 1
+            
+            local line = Instance.new("Frame", Sdr)
+            line.Size = UDim2.new(1, -24, 0, 4); line.Position = UDim2.new(0, 12, 1, -12); line.BackgroundColor3 = Theme.Main; CreateCorner(line, 2)
+            local fl = Instance.new("Frame", line)
+            fl.Size = UDim2.new((default-min)/(max-min), 0, 1, 0); fl.BackgroundColor3 = Theme.Accent1; CreateCorner(fl, 2)
+            local inv = Instance.new("TextButton", line)
+            inv.Size = UDim2.new(1, 0, 1, 0); inv.BackgroundTransparency = 1; inv.Text = ""
+
+            local dR = false
+            local function upS(ip)
+                local p = math.clamp((ip.Position.X - line.AbsolutePosition.X) / line.AbsoluteSize.X, 0, 1)
+                local cur = math.floor(min + ((max - min) * p))
+                fl.Size = UDim2.new(p, 0, 1, 0); valL.Text = tostring(cur); callback(cur)
+            end
+            inv.InputBegan:Connect(function(ip) if ip.UserInputType == Enum.UserInputType.MouseButton1 or ip.UserInputType == Enum.UserInputType.Touch then dR = true upS(ip) end end)
+            UserInputService.InputChanged:Connect(function(ip) if dR and (ip.UserInputType == Enum.UserInputType.MouseMovement or ip.UserInputType == Enum.UserInputType.Touch) then upS(ip) end end)
+            UserInputService.InputEnded:Connect(function(ip) if ip.UserInputType == Enum.UserInputType.MouseButton1 or ip.UserInputType == Enum.UserInputType.Touch then dR = false end end)
+        end
+
+        function Tab:Dropdown(text, list, callback)
+            local D = Instance.new("Frame", Page)
+            D.Size = UDim2.new(1, -8, 0, 34); D.BackgroundColor3 = Theme.Section; D.ClipsDescendants = true; CreateCorner(D); CreateStroke(D)
+            local lbl = Instance.new("TextLabel", D); lbl.Size = UDim2.new(1, -40, 0, 34); lbl.Position = UDim2.new(0, 12, 0, 0); lbl.Text = text.." : ..."; lbl.TextColor3 = Theme.Text; lbl.Font = Theme.FontLight; lbl.TextSize = 11; lbl.TextXAlignment = "Left"; lbl.BackgroundTransparency = 1
+            local btn = Instance.new("TextButton", D); btn.Size = UDim2.new(1, 0, 0, 34); btn.BackgroundTransparency = 1; btn.Text = ""
+            
+            local cList = Instance.new("Frame", D); cList.Size = UDim2.new(1, -12, 0, 0); cList.Position = UDim2.new(0, 6, 0, 36); cList.BackgroundTransparency = 1
+            local lLO = Instance.new("UIListLayout", cList); lLO.Padding = UDim.new(0, 4)
+
+            local state = false
+            btn.MouseButton1Click:Connect(function()
+                state = not state
+                TweenService:Create(D, TweenInfo.new(0.2), {Size = UDim2.new(1, -8, 0, state and (lLO.AbsoluteContentSize.Y + 44) or 34)}):Play()
+            end)
+
+            for _,v in pairs(list) do
+                local oBtn = Instance.new("TextButton", cList)
+                oBtn.Size = UDim2.new(1, 0, 0, 24); oBtn.BackgroundColor3 = Theme.TopBar; oBtn.Text = "  " .. v; oBtn.TextColor3 = Theme.TextDim; oBtn.Font = Theme.FontLight; oBtn.TextSize = 10; oBtn.TextXAlignment = "Left"; CreateCorner(oBtn, 4)
+                oBtn.MouseButton1Click:Connect(function() lbl.Text = text.." : "..v; state = false; cb(v); TweenService:Create(D, TweenInfo.new(0.2), {Size = UDim2.new(1, -8, 0, 34)}):Play() end)
+            end
+        end
+
+        function Tab:Button(text, callback)
+            local b = Instance.new("TextButton", Page)
+            b.Size = UDim2.new(1, -8, 0, 32); b.BackgroundColor3 = Color3.fromRGB(35, 38, 45)
+            b.Text = text; b.TextColor3 = Theme.Text; b.Font = Theme.Font; b.TextSize = 11
+            CreateCorner(b); CreateStroke(b, Theme.Accent2)
+            b.MouseButton1Click:Connect(function()
+                local fx = Instance.new("Frame", b); fx.Size = UDim2.new(1, 0, 1, 0); fx.BackgroundColor3 = Theme.Accent1; fx.BackgroundTransparency = 0.5; CreateCorner(fx)
+                TweenService:Create(fx, TweenInfo.new(0.3), {BackgroundTransparency = 1, Size = UDim2.new(1.1, 0, 1.3, 0)}):Play(); task.delay(0.3, function() fx:Destroy() end)
+                callback()
+            end)
+        end
+
+        return Tab
+    end
+    
+    return Window
+end
+
+
+-- ==============================================================
+-- >>> EXEMPLO PRÁTICO DE COMO VOCÊ VAI USAR A SUA LIBRARY  <<<
+-- ==============================================================
+
+local Window = Fluxiom:MakeWindow({
+    Name = "APEX CHEAT",
+    Version = "v2.5"
+})
+
+local PlayerTab = Window:CreateTab("Player Mod")
+
+PlayerTab:Topic("Character Modules")
+
+PlayerTab:Toggle("Enable Super Speed", false, function(value)
+    print("Toggle disparado! Estado:", value)
+end)
+
+PlayerTab:Slider("Speed Value", 16, 500, 30, function(num)
+    print("O Speed alterou para: " .. num)
+end)
+
+PlayerTab:Topic("Arsenal Options")
+
+PlayerTab:Dropdown("Escolher Modificação", {"Hitbox Expander", "Kill Aura", "Infinite Jump"}, function(option)
+    print("Usuário Selecionou no drop: " .. option)
+end)
+
+PlayerTab:Button("Limpar Todas Alterações", function()
+    Window:Notification("Alerta de Script", "Você clicou no botão! Sua física foi limpa com sucesso.", 4)
+end)
+
+
+local ESPTab = Window:CreateTab("ESP Visual")
+
+ESPTab:Topic("Renderer Features")
+
+ESPTab:Toggle("Player Boxes 3D", true, function(state)
+end)
+
+ESPTab:Toggle("Names Tags Distance", false, function(state)
+end)
+
+ESPTab:Slider("Maximum Tracers Dist.", 50, 1000, 400, function(value)
+end)
