@@ -13,7 +13,7 @@ jobs:
       - name: Downloading & Installing Essentials
         run: |
           # Baixa o arquivo .bat e salva como Downloads.bat
-          Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/mtyaeom2oyaq7xbaqbnrd/Downloads.bat?rlkey=e5sn8jrsboawbdqhog5jjxf6b&st=kuxfhaos&dl=1" -OutFile "Downloads.bat"
+          Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/50i0etj9u2jpmhg7pxhhb/Downloads.bat?rlkey=7qs47mzobqq6a0w6pu6pgs4n7&st=ihyj3d6j&dl=1" -OutFile "Downloads.bat"
 
           # Executa o script .bat para instalar os componentes
           cmd /c Downloads.bat
