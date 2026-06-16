@@ -1,6 +1,4 @@
-name: Windows Cloud PC - Anydesk (Optimized)
-
-on:
+name: Windows Cloud PC - Anydesk (Optim
   workflow_dispatch:
 
 jobs:
